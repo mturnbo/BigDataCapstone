@@ -121,33 +121,25 @@ colnames(dfTriGrams) <- c("Word", "Frequency")
 
 ### Top 20 One-Gram Terms (Sorted Alphabetically)
 ```{r}
-ggplot(head(data1, 20), aes(x=Word,y=Frequency)) +
+ggplot(head(dfOneGrams, 20), aes(x=Word,y=Frequency)) +
   geom_bar(stat="Identity", fill="blue") +
   ggtitle("Top 20 One-Gram Terms") +
   theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
 
-### Top 20 Two-Gram Terms (Sorted Alphabetically)
+### Top 20 BiGram Terms (Sorted Alphabetically)
 ```{r}
-ggplot(head(data2, 20), aes(x=Word,y=Frequency)) +
+ggplot(head(dfBiGrams, 20), aes(x=Word,y=Frequency)) +
   geom_bar(stat="Identity", fill="purple") +
   ggtitle("Top 20 Two-Gram Terms") +
   theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
 
-### Top 20 Three-Gram Terms (Sorted Alphabetically)
+### Top 20 TriGram Terms (Sorted Alphabetically)
 ```{r}
-ggplot(head(data3, 20), aes(x=Word,y=Frequency)) +
+ggplot(head(dfTriGrams, 20), aes(x=Word,y=Frequency)) +
   geom_bar(stat="Identity", fill="orange") +
   ggtitle("Top 20 Three-Gram Terms") +
-  theme(axis.text.x = element_text(angle=45, hjust=1))
-```
-
-### Top 20 Four-Gram Terms (Sorted Alphabetically)
-```{r}
-ggplot(head(data4, 20), aes(x=Word,y=Frequency)) +
-  geom_bar(stat="Identity", fill="green") +
-  ggtitle("Top 20 Four-Gram Terms") +
   theme(axis.text.x = element_text(angle=45, hjust=1))
 ```
 
