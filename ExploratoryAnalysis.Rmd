@@ -1,0 +1,193 @@
+---
+title: "Data Science Capstone - Exploratory Analysis"
+author: "Marcus Turnbo"
+date: "February 20, 2015"
+output: html_document
+---
+
+The purpose of this analysis is to:
+
+1. Perform a thorough exploratory analysis of the data, understanding the distribution of words and relationship between the words in the corpora. 
+2. Build figures and tables to understand variation in the frequencies of words and word pairs in the data.
+
+```{r, warning=FALSE, include=FALSE}
+library("tm") 
+library("RWeka") 
+library("qdap") 
+library("NLP") 
+library("openNLP") 
+library("ggplot2") 
+```
+
+## Data acquisition & Cleaning
+
+### Load data sets and get sizes and lengths
+```{r}
+setwd("../data/final/en_US")
+
+twitter.us <- readLines("en_US.twitter.txt", encoding = "UTF-8", skipNul=TRUE)
+twitter.us.size <- file.info("en_US.twitter.txt")$size / 1024 / 1024
+twitter.us.length <- length(twitter.us)
+twitter.us.words <- sum(sapply(gregexpr("\\S+", twitter.us), length))
+
+news.us <- readLines("en_US.news.txt", encoding = "UTF-8", skipNul=TRUE)
+news.us.size <- file.info("en_US.news.txt")$size / 1024 / 1024
+news.us.length <- length(news.us)
+news.us.words <- sum(sapply(gregexpr("\\S+", news.us), length))
+
+blogs.us <- readLines("en_US.blogs.txt", encoding = "UTF-8", skipNul=TRUE)
+blogs.us.size <- file.info("en_US.blogs.txt")$size / 1024 / 1024
+blogs.us.length <- length(blogs.us)
+blogs.us.words <- sum(sapply(gregexpr("\\S+", blogs.us), length))
+```
+
+### Twitter Dataset
+`r twitter.us.size` MB
+`r twitter.us.length` lines
+`r twitter.us.words` words
+
+### News Dataset
+`r news.us.size` MB
+`r news.us.length` lines
+`r news.us.words` words
+
+### Blogs Dataset
+`r blogs.us.size` MB
+`r blogs.us.length` lines
+`r blogs.us.words` words
+
+## Cleaning up the data
+Using list of bad words from
+https://code.google.com/p/badwordslist/downloads/detail?name=badwords.txt
+
+```{r}
+setwd("../data/final/en_US")
+badwords = readLines("badwords.txt")
+```
+
+### Tokenization
+
+We will work with a sample of the data for tokenization.
+
+```{r}
+sample <- c(sample(twitter.us, 10000), sample(news.us, 10000), sample(blogs.us, 10000))
+```
+
+Build a corpus.  Remove numbers, whitespace, and special characters.  Lowercase all words.
+
+```{r}
+corpus <- Corpus(VectorSource(sample))                  # build corpus
+#corpus <- tm_map(corpus, sent_detect)                   # detect sentences
+corpus <- tm_map(corpus, removeNumbers)                 # remove numbers
+corpus <- tm_map(corpus, stripWhitespace)               # removing whitespace
+corpus <- tm_map(corpus, removePunctuation)             # remove special characters
+#corpus <- tm_map(corpus, tolower, lazy = TRUE)          # lowercase 
+corpus <- tm_map(corpus, removeWords, badwords, lazy = TRUE)         # bad words
+```
+
+Use RWeka package to create one-word, two-word, and three-word tokenizations.
+
+```{r}
+cleanText <- data.frame(text=unlist(sapply(corpus, `[`, "content")), stringsAsFactors = FALSE)
+
+onegrams <- NGramTokenizer(cleanText, Weka_control(min = 1, max = 1))
+saveRDS(onegrams, file = "../data/final/en_US/sample_onegrams.rds")
+
+bigrams <- NGramTokenizer(cleanText, Weka_control(min = 2, max = 2, delimiters = " \\r\\n\\t.,;:\"()?!"))
+saveRDS(bigrams, file = "../data/final/en_US/sample_onegrams.rds")
+
+trigrams <- NGramTokenizer(cleanText, Weka_control(min = 3, max = 3, delimiters = " \\r\\n\\t.,;:\"()?!"))
+saveRDS(trigrams, file = "../data/final/en_US/sample_onegrams.rds")
+```
+
+
+## Exploratory Analysis
+
+We analyze the distributions of words in the tokenizations by frequency.
+
+```{r}
+data1 <- data.frame(table(token1))
+data1 <- data1[order(data1$Freq, decreasing=TRUE),]
+colnames(data1) <- c("Word", "Frequency")
+
+data2 = data.frame(table(token2))
+data2 <- data2[order(data2$Freq, decreasing=TRUE),]
+colnames(data2) <- c("Word", "Frequency")
+
+data3 = data.frame(table(token3))
+data3 <- data3[order(data3$Freq, decreasing=TRUE),]
+colnames(data3) <- c("Word", "Frequency")
+```
+
+### Top 20 One-Gram Terms (Sorted Alphabetically)
+```{r}
+ggplot(head(data1, 20), aes(x=Word,y=Frequency)) +
+  geom_bar(stat="Identity", fill="blue") +
+  ggtitle("Top 20 One-Gram Terms") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Top 20 Two-Gram Terms (Sorted Alphabetically)
+```{r}
+ggplot(head(data2, 20), aes(x=Word,y=Frequency)) +
+  geom_bar(stat="Identity", fill="purple") +
+  ggtitle("Top 20 Two-Gram Terms") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Top 20 Three-Gram Terms (Sorted Alphabetically)
+```{r}
+ggplot(head(data3, 20), aes(x=Word,y=Frequency)) +
+  geom_bar(stat="Identity", fill="orange") +
+  ggtitle("Top 20 Three-Gram Terms") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+### Top 20 Four-Gram Terms (Sorted Alphabetically)
+```{r}
+ggplot(head(data4, 20), aes(x=Word,y=Frequency)) +
+  geom_bar(stat="Identity", fill="green") +
+  ggtitle("Top 20 Four-Gram Terms") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+```
+
+As we add more words to grams the frequencies became much lower. 
+the number of combinations are much higher than number of words so the frequencies decreases.
+
+
+## How many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language? 90%?
+
+```{r}
+wordCoverage <- function (words, coverage)
+{
+  frequency <- 0
+  requiredFrequency <- coverage * sum(words$Frequency)
+  for (i in 1:nrow(words)) {
+    if (frequency >= requiredFrequency) {
+      return (i)
+    }
+    frequency <- frequency + words$Frequency[i]
+  }
+}
+```
+
+```{r}
+pcts <- c(10, 20, 30, 40, 50, 60, 70, 80, 90)
+wordPcts <- c()
+for (p in pcts) {
+  wordPcts <- c(wordPcts, wordCoverage(data1, (p/100.0)))
+}
+qplot(pcts, wordPcts, geom=c("line","point")) + geom_text(aes(label=wordPcts), hjust=1.3, vjust=-0.2) + 
+  scale_x_discrete(breaks=pcts, labels=pcts)
+```
+
+## Conclusions
+- The most popular words are stop-words
+- The number of words needed to achieve text coverage roughly doubles for every 10% increase.
+
+## Future Plans for Prediction Algorithm
+- Build functions to process the entire dataset
+- Optimize number of entries in each n-gram for amount of computer memory
+
+
+
