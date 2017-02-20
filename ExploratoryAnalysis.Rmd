@@ -106,17 +106,17 @@ saveRDS(trigrams, file = "../data/final/en_US/sample_onegrams.rds")
 We analyze the distributions of words in the tokenizations by frequency.
 
 ```{r}
-data1 <- data.frame(table(token1))
-data1 <- data1[order(data1$Freq, decreasing=TRUE),]
-colnames(data1) <- c("Word", "Frequency")
+dfOneGrams <- data.frame(table(onegrams))
+dfOneGrams <- dfOneGrams[order(dfOneGrams$Freq, decreasing=TRUE),]
+colnames(dfOneGrams) <- c("Word", "Frequency")
 
-data2 = data.frame(table(token2))
-data2 <- data2[order(data2$Freq, decreasing=TRUE),]
-colnames(data2) <- c("Word", "Frequency")
+dfBiGrams = data.frame(table(bigrams))
+dfBiGrams <- dfBiGrams[order(dfBiGrams$Freq, decreasing=TRUE),]
+colnames(dfBiGrams) <- c("Word", "Frequency")
 
-data3 = data.frame(table(token3))
-data3 <- data3[order(data3$Freq, decreasing=TRUE),]
-colnames(data3) <- c("Word", "Frequency")
+dfTriGrams = data.frame(table(trigrams))
+dfTriGrams <- dfTriGrams[order(dfTriGrams$Freq, decreasing=TRUE),]
+colnames(dfTriGrams) <- c("Word", "Frequency")
 ```
 
 ### Top 20 One-Gram Terms (Sorted Alphabetically)
